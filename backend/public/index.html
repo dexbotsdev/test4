@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Items List</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    #items-container {
+      margin-bottom: 1rem;
+    }
+    .item {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Items</h1>
+  <input type="text" id="search" placeholder="Search...">
+  <div id="items-container"></div>
+  <button id="prev">Previous</button>
+  <button id="next">Next</button>
+
+  <script>
+    const searchInput = document.getElementById('search');
+    const itemsContainer = document.getElementById('items-container');
+    const prevButton = document.getElementById('prev');
+    const nextButton = document.getElementById('next');
+
+    let page = 1;
+    const limit = 10;
+    let query = '';
+
+    async function fetchItems() {
+      const offset = (page - 1) * limit;
+      let url = `/api/items?limit=${limit}&offset=${offset}`;
+      if (query) {
+        url += `&q=${query}`;
+      }
+
+      const res = await fetch(url);
+      const items = await res.json();
+
+      itemsContainer.innerHTML = '';
+      items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('item');
+        itemElement.textContent = item.name;
+        itemsContainer.appendChild(itemElement);
+      });
+
+      prevButton.disabled = page === 1;
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      query = e.target.value;
+      page = 1;
+      fetchItems();
+    });
+
+    prevButton.addEventListener('click', () => {
+      if (page > 1) {
+        page--;
+        fetchItems();
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      page++;
+      fetchItems();
+    });
+
+    fetchItems();
+  </script>
+</body>
+</html>
